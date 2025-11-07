@@ -16,6 +16,31 @@ const { processCodeOutput } = require('~/server/services/Files/Code/process');
 const { loadAuthValues } = require('~/server/services/Tools/credentials');
 const { saveBase64Image } = require('~/server/services/Files/process');
 
+/**
+ * Custom stream handler that ensures tool calls are properly registered during streaming
+ */
+class CustomChatModelStreamHandler extends ChatModelStreamHandler {
+  /**
+   * @param {string} event
+   * @param {StreamData | undefined} data
+   * @param {Record<string, unknown> | undefined} metadata
+   * @param {StandardGraph} graph
+   */
+  handle(event, data, metadata, graph) {
+    // Call the parent handler first
+    super.handle(event, data, metadata, graph);
+
+    // Additionally handle tool calls during streaming to register stepIds
+    try {
+      if (data?.output?.tool_calls && graph && metadata) {
+        handleToolCalls(data.output.tool_calls, metadata, graph);
+      }
+    } catch (error) {
+      logger.error('Error handling tool calls in stream:', error);
+    }
+  }
+}
+
 class ModelEndHandler {
   /**
    * @param {Array<UsageMetadata>} collectedUsage
@@ -41,8 +66,13 @@ class ModelEndHandler {
     }
 
     try {
-      if (metadata.provider === Providers.GOOGLE || graph.clientOptions?.disableStreaming) {
-        handleToolCalls(data?.output?.tool_calls, metadata, graph);
+      // Always handle tool calls to register stepIds, regardless of provider or streaming status
+      // if (data?.output?.tool_calls) {
+      //   handleToolCalls(data.output.tool_calls, metadata, graph);
+      // }
+
+      if (data?.output?.tool_calls && graph && metadata) {
+        handleToolCalls(data.output.tool_calls, metadata, graph);
       }
 
       const usage = data?.output?.usage_metadata;
@@ -96,19 +126,6 @@ class ModelEndHandler {
 }
 
 /**
- * @deprecated Agent Chain helper
- * @param {string | undefined} [last_agent_id]
- * @param {string | undefined} [langgraph_node]
- * @returns {boolean}
- */
-function checkIfLastAgent(last_agent_id, langgraph_node) {
-  if (!last_agent_id || !langgraph_node) {
-    return false;
-  }
-  return langgraph_node?.endsWith(last_agent_id);
-}
-
-/**
  * Get default handlers for stream events.
  * @param {Object} options - The options object.
  * @param {ServerResponse} options.res - The options object.
@@ -127,7 +144,7 @@ function getDefaultHandlers({ res, aggregateContent, toolEndCallback, collectedU
   const handlers = {
     [GraphEvents.CHAT_MODEL_END]: new ModelEndHandler(collectedUsage),
     [GraphEvents.TOOL_END]: new ToolEndHandler(toolEndCallback),
-    [GraphEvents.CHAT_MODEL_STREAM]: new ChatModelStreamHandler(),
+    // [GraphEvents.CHAT_MODEL_STREAM]: new CustomChatModelStreamHandler(),
     [GraphEvents.ON_RUN_STEP]: {
       /**
        * Handle ON_RUN_STEP event.
@@ -138,7 +155,7 @@ function getDefaultHandlers({ res, aggregateContent, toolEndCallback, collectedU
       handle: (event, data, metadata) => {
         if (data?.stepDetails.type === StepTypes.TOOL_CALLS) {
           sendEvent(res, { event, data });
-        } else if (checkIfLastAgent(metadata?.last_agent_id, metadata?.langgraph_node)) {
+        } else if (metadata?.last_agent_index === metadata?.agent_index) {
           sendEvent(res, { event, data });
         } else if (!metadata?.hide_sequential_outputs) {
           sendEvent(res, { event, data });
@@ -167,7 +184,7 @@ function getDefaultHandlers({ res, aggregateContent, toolEndCallback, collectedU
       handle: (event, data, metadata) => {
         if (data?.delta.type === StepTypes.TOOL_CALLS) {
           sendEvent(res, { event, data });
-        } else if (checkIfLastAgent(metadata?.last_agent_id, metadata?.langgraph_node)) {
+        } else if (metadata?.last_agent_index === metadata?.agent_index) {
           sendEvent(res, { event, data });
         } else if (!metadata?.hide_sequential_outputs) {
           sendEvent(res, { event, data });
@@ -183,11 +200,13 @@ function getDefaultHandlers({ res, aggregateContent, toolEndCallback, collectedU
        * @param {GraphRunnableConfig['configurable']} [metadata] The runnable metadata.
        */
       handle: (event, data, metadata) => {
-        if (data?.result != null) {
-          sendEvent(res, { event, data });
-        } else if (checkIfLastAgent(metadata?.last_agent_id, metadata?.langgraph_node)) {
-          sendEvent(res, { event, data });
-        } else if (!metadata?.hide_sequential_outputs) {
+        // Always send tool call completions OR if any other condition allows it
+        const isToolCall = data?.stepDetails?.type === StepTypes.TOOL_CALLS;
+        const hasResult = data?.result != null;
+        const isLastAgent = metadata?.last_agent_index === metadata?.agent_index;
+        const shouldShowSequential = !metadata?.hide_sequential_outputs;
+        
+        if (isToolCall || hasResult || isLastAgent || shouldShowSequential) {
           sendEvent(res, { event, data });
         }
         aggregateContent({ event, data });
@@ -201,7 +220,7 @@ function getDefaultHandlers({ res, aggregateContent, toolEndCallback, collectedU
        * @param {GraphRunnableConfig['configurable']} [metadata] The runnable metadata.
        */
       handle: (event, data, metadata) => {
-        if (checkIfLastAgent(metadata?.last_agent_id, metadata?.langgraph_node)) {
+        if (metadata?.last_agent_index === metadata?.agent_index) {
           sendEvent(res, { event, data });
         } else if (!metadata?.hide_sequential_outputs) {
           sendEvent(res, { event, data });
@@ -217,7 +236,7 @@ function getDefaultHandlers({ res, aggregateContent, toolEndCallback, collectedU
        * @param {GraphRunnableConfig['configurable']} [metadata] The runnable metadata.
        */
       handle: (event, data, metadata) => {
-        if (checkIfLastAgent(metadata?.last_agent_id, metadata?.langgraph_node)) {
+        if (metadata?.last_agent_index === metadata?.agent_index) {
           sendEvent(res, { event, data });
         } else if (!metadata?.hide_sequential_outputs) {
           sendEvent(res, { event, data });

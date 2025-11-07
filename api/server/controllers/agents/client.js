@@ -786,7 +786,7 @@ class AgentClient extends BaseClient {
         },
         recursionLimit: agentsEConfig?.recursionLimit ?? 25,
         signal: abortController.signal,
-        streamMode: 'values',
+        streamMode: 'messages',
         version: 'v2',
       };
 
@@ -872,11 +872,54 @@ class AgentClient extends BaseClient {
 
         /** @deprecated Agent Chain */
         config.configurable.last_agent_id = agents[agents.length - 1].id;
-        await run.processStream({ messages }, config, {
+        const result = await run.processStream({ messages }, config, {
           callbacks: {
             [Callback.TOOL_ERROR]: logToolError,
           },
         });
+        
+        // WORKAROUND: Extract response from Graph since streaming events aren't firing in @librechat/agents v3.0.5
+        if (run.Graph?.messages?.length > 0) {
+          // Find the last AI message (skip tool messages)
+          let lastAIMessage = null;
+          for (let i = run.Graph.messages.length - 1; i >= 0; i--) {
+            const msg = run.Graph.messages[i];
+            const msgType = msg?.constructor?.name || msg?._getType?.() || '';
+            if (msgType.includes('AI') || msgType.includes('Assistant')) {
+              lastAIMessage = msg;
+              break;
+            }
+          }
+          
+          if (lastAIMessage?.content) {
+            let textContent = '';
+            if (typeof lastAIMessage.content === 'string') {
+              textContent = lastAIMessage.content;
+            } else if (Array.isArray(lastAIMessage.content)) {
+              textContent = lastAIMessage.content
+                .filter(part => part.type === 'text' || typeof part === 'string')
+                .map(part => typeof part === 'string' ? part : part.text)
+                .join('');
+            }
+            
+            // Remove XML-like tags (<think>, <tool_call>, etc.)
+            if (textContent) {
+              // Remove <think>...</think> blocks
+              textContent = textContent.replace(/<think>[\s\S]*?<\/think>/gi, '');
+              // Remove <tool_call>...</tool_call> blocks  
+              textContent = textContent.replace(/<tool_call>[\s\S]*?<\/tool_call>/gi, '');
+              // Clean up extra whitespace
+              textContent = textContent.replace(/\n\s*\n/g, '\n').trim();
+              
+              if (textContent) {
+                this.contentParts.push({
+                  type: 'text',
+                  text: textContent,
+                });
+              }
+            }
+          }
+        }
 
         config.signal = null;
       };
