@@ -33,7 +33,7 @@ export default function HTMLIframe({ html, title = 'HTML Content' }: HTMLIframeP
             html?.offsetHeight || 0,
           );
           if (contentHeight > 0) {
-            setHeight(Math.min(contentHeight + 20, 400)); // Max 800px height
+            setHeight(Math.min(contentHeight + 20, 400));
           }
         } catch (error) {
           // Cross-origin or security error - use default height

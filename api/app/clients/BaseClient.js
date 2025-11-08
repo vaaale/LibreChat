@@ -782,7 +782,8 @@ class BaseClient {
     }
 
     if (this.artifactPromises) {
-      responseMessage.attachments = (await Promise.all(this.artifactPromises)).filter((a) => a);
+      const resolvedArtifacts = await Promise.all(this.artifactPromises);
+      responseMessage.attachments = resolvedArtifacts.filter((a) => a);
     }
 
     if (this.options.attachments) {

@@ -32,6 +32,11 @@ export default function useAttachmentHandler(queryClient?: QueryClient) {
     setAttachmentsMap((prevMap) => {
       const messageAttachments =
         (prevMap as Record<string, TAttachment[] | undefined>)[messageId] || [];
+      console.log('[useAttachmentHandler] Updating map:', {
+        messageId,
+        previousCount: messageAttachments.length,
+        newCount: messageAttachments.length + 1,
+      });
       return {
         ...prevMap,
         [messageId]: [...messageAttachments, data],

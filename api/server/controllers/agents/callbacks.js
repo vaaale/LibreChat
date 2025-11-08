@@ -267,6 +267,69 @@ function createToolEndCallback({ req, res, artifactPromises }) {
       return;
     }
 
+    logger.debug('[ToolEndCallback] Output structure:', {
+      hasContent: !!output.content,
+      contentType: typeof output.content,
+      contentPreview: typeof output.content === 'string' ? output.content.substring(0, 200) : null,
+      outputKeys: Object.keys(output),
+    });
+
+    // Check if the output is HTML content
+    let parsedOutput;
+    try {
+      parsedOutput = typeof output.content === 'string' ? JSON.parse(output.content) : output.content;
+    } catch (e) {
+      // Not JSON, continue normal flow
+      parsedOutput = null;
+    }
+
+    logger.debug('[ToolEndCallback] Parsed output:', {
+      hasParsedOutput: !!parsedOutput,
+      hasHtmlFlag: !!parsedOutput?.__html_content,
+    });
+
+    if (parsedOutput?.__html_content) {
+      logger.debug('[ToolEndCallback] HTML content detected, creating attachment');
+
+      // HTML content detected - create attachment and mark to skip model call
+      artifactPromises.push(
+        (async () => {
+          const attachment = {
+            type: Tools.html_content,
+            messageId: metadata.run_id,
+            toolCallId: output.tool_call_id,
+            conversationId: metadata.thread_id,
+            html: parsedOutput.html,
+            domain: parsedOutput.domain,
+          };
+          
+          logger.debug('[ToolEndCallback] Created HTML attachment:', {
+            type: attachment.type,
+            messageId: attachment.messageId,
+            toolCallId: attachment.toolCallId,
+            htmlLength: attachment.html?.length || 0,
+            headersSent: res.headersSent,
+          });
+          
+          if (!res.headersSent) {
+            logger.debug('[ToolEndCallback] Headers not sent, returning attachment for later processing');
+            return attachment;
+          }
+          
+          logger.debug('[ToolEndCallback] Writing attachment to SSE stream');
+          res.write(`event: attachment\ndata: ${JSON.stringify(attachment)}\n\n`);
+          return attachment;
+        })().catch((error) => {
+          logger.error('Error processing HTML content:', error);
+          return null;
+        }),
+      );
+      
+      return;
+    }
+
+    logger.debug('[ToolEndCallback] Not HTML content, continuing with normal artifact processing');
+
     if (!output.artifact) {
       return;
     }

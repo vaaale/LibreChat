@@ -879,7 +879,14 @@ class AgentClient extends BaseClient {
         });
         
         // WORKAROUND: Extract response from Graph since streaming events aren't firing in @librechat/agents v3.0.5
-        if (run.Graph?.messages?.length > 0) {
+        // Skip if HTML content was returned (to avoid showing model's response to HTML)
+        // Check artifactPromises for HTML content
+        const resolvedArtifacts = await Promise.all(this.artifactPromises);
+        const hasHTMLContent = resolvedArtifacts.some(
+          (artifact) => artifact?.type === 'html_content'
+        );
+        
+        if (!hasHTMLContent && run.Graph?.messages?.length > 0) {
           // Find the last AI message (skip tool messages)
           let lastAIMessage = null;
           for (let i = run.Graph.messages.length - 1; i >= 0; i--) {

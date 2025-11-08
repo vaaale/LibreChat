@@ -315,10 +315,34 @@ async function createActionTool({
 
       const response = await preparedExecutor.execute();
 
-      if (typeof response.data === 'object') {
-        return JSON.stringify(response.data);
+      // Check if response is HTML
+      const isHTML = (data) => {
+        if (typeof data !== 'string') {
+          return false;
+        }
+        const trimmed = data.trim();
+        return (
+          trimmed.startsWith('<!DOCTYPE html') ||
+          trimmed.startsWith('<html') ||
+          /<html[^>]*>/i.test(trimmed)
+        );
+      };
+
+      const responseData = response.data;
+      
+      // If HTML, return with special marker for detection
+      if (isHTML(responseData)) {
+        return JSON.stringify({
+          __html_content: true,
+          html: responseData,
+          domain: action.metadata?.domain || 'Action Result',
+        });
       }
-      return response.data;
+
+      if (typeof responseData === 'object') {
+        return JSON.stringify(responseData);
+      }
+      return responseData;
     } catch (error) {
       const message = `API call to ${action.metadata.domain} failed:`;
       return logAxiosError({ message, error });
