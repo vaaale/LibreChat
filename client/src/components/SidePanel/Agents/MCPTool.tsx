@@ -276,35 +276,35 @@ export default function MCPTool({ serverInfo }: { serverInfo?: MCPServerInfo }) 
                     )}
                     aria-label={subTool.metadata.name}
                   />
-                  <div className="flex flex-1 flex-col gap-1">
+                  <div className="flex flex-1 items-center gap-2">
                     <span className="text-token-text-primary select-none">
                       {subTool.metadata.name}
                     </span>
-                    {selectedTools.includes(subTool.tool_id) && (
-                      <div
-                        className="flex items-center gap-2"
+                  </div>
+                  {selectedTools.includes(subTool.tool_id) && (
+                    <div
+                      className="flex items-center gap-2 ml-auto"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Label
+                        htmlFor={`${subTool.tool_id}-return-direct`}
+                        className="cursor-pointer text-xs text-text-secondary"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Checkbox
-                          id={`${subTool.tool_id}-return-direct`}
-                          checked={getToolConfig(subTool.tool_id).returnDirect === true}
-                          onCheckedChange={(checked) => {
-                            updateToolConfig(subTool.tool_id, { returnDirect: checked === true });
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          className="h-3.5 w-3.5 rounded border border-border-medium"
-                          aria-label={localize('com_ui_tool_return_direct')}
-                        />
-                        <Label
-                          htmlFor={`${subTool.tool_id}-return-direct`}
-                          className="cursor-pointer text-xs text-text-secondary"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {localize('com_ui_tool_return_direct')}
-                        </Label>
-                      </div>
-                    )}
-                  </div>
+                        {localize('com_ui_tool_return_direct')}
+                      </Label>
+                      <Checkbox
+                        id={`${subTool.tool_id}-return-direct`}
+                        checked={getToolConfig(subTool.tool_id).returnDirect === true}
+                        onCheckedChange={(checked) => {
+                          updateToolConfig(subTool.tool_id, { returnDirect: checked === true });
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="h-3.5 w-3.5 rounded border border-border-medium"
+                        aria-label={localize('com_ui_tool_return_direct')}
+                      />
+                    </div>
+                  )}
                   {subTool.metadata.description && (
                     <Ariakit.HovercardProvider placement="left-start">
                       <div className="ml-auto flex h-6 w-6 items-center justify-center">
