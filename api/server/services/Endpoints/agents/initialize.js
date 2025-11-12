@@ -42,7 +42,16 @@ function createToolLoader(signal) {
    * userMCPAuthMap?: Record<string, Record<string, string>>
    * } | undefined>}
    */
-  return async function loadTools({ req, res, agentId, tools, provider, model, tool_config, tool_resources }) {
+  return async function loadTools({
+    req,
+    res,
+    agentId,
+    tools,
+    provider,
+    model,
+    tool_config,
+    tool_resources,
+  }) {
     const agent = { id: agentId, tools, provider, model, tool_config };
     try {
       return await loadAgentTools({
