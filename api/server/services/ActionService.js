@@ -336,7 +336,7 @@ async function createActionTool({
     
     // Add returnDirect property to the tool if specified
     if (returnDirect === true) {
-      actionTool.returnDirect = false;
+      actionTool.returnDirect = true;
     }
     
     return actionTool;

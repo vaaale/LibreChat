@@ -857,11 +857,6 @@ class AgentClient extends BaseClient {
         // }
 
         memoryPromise = this.runMemory(messages);
-        for (const agent of agents) {
-          for (const tool of agent.tools) {
-            tool.returnDirect = true;
-          }
-        }
         run = await createRun({
           agents,
           indexTokenCountMap,

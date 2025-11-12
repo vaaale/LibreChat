@@ -34,6 +34,7 @@ function createToolLoader(signal) {
    * @param {string[]} params.tools
    * @param {string} params.provider
    * @param {string} params.model
+   * @param {Record<string, { returnDirect?: boolean }>} [params.tool_config] - Tool configuration including returnDirect flags
    * @param {AgentToolResources} params.tool_resources
    * @returns {Promise<{
    * tools: StructuredTool[],
@@ -41,8 +42,8 @@ function createToolLoader(signal) {
    * userMCPAuthMap?: Record<string, Record<string, string>>
    * } | undefined>}
    */
-  return async function loadTools({ req, res, agentId, tools, provider, model, tool_resources }) {
-    const agent = { id: agentId, tools, provider, model };
+  return async function loadTools({ req, res, agentId, tools, provider, model, tool_config, tool_resources }) {
+    const agent = { id: agentId, tools, provider, model, tool_config };
     try {
       return await loadAgentTools({
         req,
