@@ -23,6 +23,7 @@ export interface IAgent extends Omit<Document, 'model'> {
   recursion_limit?: number;
   tools?: string[];
   tool_kwargs?: Array<unknown>;
+  tool_config?: Record<string, { returnDirect?: boolean }>;
   actions?: string[];
   author: Types.ObjectId;
   authorName?: string;

@@ -49,6 +49,10 @@ const agentSchema = new Schema<IAgent>(
     tool_kwargs: {
       type: [{ type: Schema.Types.Mixed }],
     },
+    tool_config: {
+      type: Schema.Types.Mixed,
+      default: {},
+    },
     actions: {
       type: [String],
       default: undefined,

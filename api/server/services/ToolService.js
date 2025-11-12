@@ -457,9 +457,14 @@ async function loadAgentTools({ req, res, agent, signal, tool_resources, openAIA
     imageOutputType: appConfig.imageOutputType,
   });
 
+  // Get tool_config from agent if available
+  const toolConfig = agent.tool_config || {};
+
   const agentTools = [];
   for (let i = 0; i < loadedTools.length; i++) {
     const tool = loadedTools[i];
+    const toolId = tool.name || tool.tool_id;
+    
     if (tool.name && (tool.name === Tools.execute_code || tool.name === Tools.file_search)) {
       agentTools.push(tool);
       continue;
@@ -470,11 +475,23 @@ async function loadAgentTools({ req, res, agent, signal, tool_resources, openAIA
     }
 
     if (tool.mcp === true) {
+      // Apply returnDirect from tool_config for MCP tools
+      // Use originalToolKey (before normalization) to match what's stored in tool_config
+      const toolConfigKey = tool.originalToolKey || toolId;
+      
+      if (toolConfig[toolConfigKey]?.returnDirect === true) {
+        tool.returnDirect = true;
+        logger.debug(`[ToolService] Applied returnDirect to MCP tool: ${tool.name}`);
+      }
       agentTools.push(tool);
       continue;
     }
 
     if (tool instanceof DynamicStructuredTool) {
+      // Apply returnDirect from tool_config
+      if (toolConfig[toolId]?.returnDirect === true) {
+        tool.returnDirect = true;
+      }
       agentTools.push(tool);
       continue;
     }
@@ -492,6 +509,16 @@ async function loadAgentTools({ req, res, agent, signal, tool_resources, openAIA
     const toolInstance = toolFn(async (...args) => {
       return tool['_call'](...args);
     }, toolDefinition);
+
+    // Preserve returnDirect flag if it exists on the original tool
+    if (tool.returnDirect === true) {
+      toolInstance.returnDirect = true;
+    }
+    
+    // Apply returnDirect from tool_config
+    if (toolConfig[toolId]?.returnDirect === true) {
+      toolInstance.returnDirect = true;
+    }
 
     agentTools.push(toolInstance);
   }
@@ -621,6 +648,7 @@ async function loadAgentTools({ req, res, agent, signal, tool_resources, openAIA
         encrypted,
         name: toolName,
         description: functionSig.description,
+        returnDirect: action.settings?.returnDirect,
       });
 
       if (!tool) {

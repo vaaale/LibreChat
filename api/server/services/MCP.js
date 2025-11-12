@@ -426,6 +426,8 @@ function createToolInstance({ res, toolName, serverName, toolDefinition, provide
   });
   toolInstance.mcp = true;
   toolInstance.mcpRawServerName = serverName;
+  // Store the original tool key before normalization for tool_config lookup
+  toolInstance.originalToolKey = `${toolName}${Constants.mcp_delimiter}${serverName}`;
   return toolInstance;
 }
 

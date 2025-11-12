@@ -48,6 +48,12 @@ export type FunctionTool = {
     strict?: boolean;
     additionalProperties?: boolean; // must be false if strict is true https://platform.openai.com/docs/guides/structured-outputs/some-type-specific-keywords-are-not-yet-supported
   };
+  /**
+   * When true, the tool's output will be returned directly to the user
+   * without being sent back to the model for processing.
+   * @default false
+   */
+  returnDirect?: boolean;
 };
 
 /**
@@ -221,6 +227,7 @@ export type Agent = {
   tools?: string[];
   projectIds?: string[];
   tool_kwargs?: Record<string, unknown>;
+  tool_config?: Record<string, { returnDirect?: boolean }>;
   metadata?: Record<string, unknown>;
   provider: AgentProvider;
   model: string | null;

@@ -53,6 +53,22 @@ export default function MCPTool({ serverInfo }: { serverInfo?: MCPServerInfo }) 
     setValue('tools', [...otherTools, ...newSelectedTools]);
   };
 
+  const getToolConfig = (toolId: string) => {
+    const toolConfig = getValues('tool_config') || {};
+    return toolConfig[toolId] || {};
+  };
+
+  const updateToolConfig = (toolId: string, config: { returnDirect?: boolean }) => {
+    const currentConfig = getValues('tool_config') || {};
+    setValue('tool_config', {
+      ...currentConfig,
+      [toolId]: {
+        ...currentConfig[toolId],
+        ...config,
+      },
+    });
+  };
+
   const selectedTools = getSelectedTools();
   const isExpanded = accordionValue === currentServerName;
 
@@ -260,9 +276,35 @@ export default function MCPTool({ serverInfo }: { serverInfo?: MCPServerInfo }) 
                     )}
                     aria-label={subTool.metadata.name}
                   />
-                  <span className="text-token-text-primary select-none">
-                    {subTool.metadata.name}
-                  </span>
+                  <div className="flex flex-1 flex-col gap-1">
+                    <span className="text-token-text-primary select-none">
+                      {subTool.metadata.name}
+                    </span>
+                    {selectedTools.includes(subTool.tool_id) && (
+                      <div
+                        className="flex items-center gap-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Checkbox
+                          id={`${subTool.tool_id}-return-direct`}
+                          checked={getToolConfig(subTool.tool_id).returnDirect === true}
+                          onCheckedChange={(checked) => {
+                            updateToolConfig(subTool.tool_id, { returnDirect: checked === true });
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="h-3.5 w-3.5 rounded border border-border-medium"
+                          aria-label={localize('com_ui_tool_return_direct')}
+                        />
+                        <Label
+                          htmlFor={`${subTool.tool_id}-return-direct`}
+                          className="cursor-pointer text-xs text-text-secondary"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {localize('com_ui_tool_return_direct')}
+                        </Label>
+                      </div>
+                    )}
+                  </div>
                   {subTool.metadata.description && (
                     <Ariakit.HovercardProvider placement="left-start">
                       <div className="ml-auto flex h-6 w-6 items-center justify-center">

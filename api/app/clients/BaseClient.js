@@ -691,6 +691,9 @@ class BaseClient {
 
     /** @type {string|string[]|undefined} */
     const completion = await this.sendCompletion(payload, opts);
+    if (completion.at(-1).type === 'tool_call') {
+      completion.push(JSON.parse(completion.at(-1).tool_call.output).at(-1));
+    }
     if (this.abortController) {
       this.abortController.requestCompleted = true;
     }
