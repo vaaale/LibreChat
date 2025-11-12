@@ -5,6 +5,7 @@ import { Spinner, useToastContext } from '@librechat/client';
 import {
   validateAndParseOpenAPISpec,
   openapiToFunction,
+  extractDomainFromUrl,
   AuthTypeEnum,
 } from 'librechat-data-provider';
 import type {
@@ -120,8 +121,8 @@ export default function ActionsInput({
     let { metadata = {} } = action ?? {};
     const action_id = action?.action_id;
     metadata.raw_spec = inputValue;
-    const parsedUrl = new URL(data[0].domain);
-    const domain = parsedUrl.hostname;
+    // Extract domain with protocol to match server-side validation
+    const domain = extractDomainFromUrl(data[0].domain);
     if (!domain) {
       // alert user?
       return;
