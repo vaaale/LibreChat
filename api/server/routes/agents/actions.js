@@ -177,7 +177,7 @@ router.post(
       );
 
       // Only update user field for new actions
-      const actionUpdateData = { metadata, agent_id };
+      const actionUpdateData = { metadata, agent_id, functions };
       if (!actions_result || !actions_result.length) {
         // For new actions, use the agent owner's user ID
         actionUpdateData.user = agent_author || req.user.id;

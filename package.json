@@ -8,6 +8,7 @@
     "packages/*"
   ],
   "scripts": {
+    "build": "NODE_OPTIONS='--max-old-space-size=16384' NODE_ENV=production rollup -c",
     "update": "node config/update.js",
     "add-balance": "node config/add-balance.js",
     "set-balance": "node config/set-balance.js",
@@ -156,7 +157,7 @@
     ]
   },
   "dependencies": {
-    "@librechat/agents": "file:../agents",
+    "@librechat/agents": "file:./agents",
     "@opentelemetry/sdk-node": "^0.208.0"
   }
 }

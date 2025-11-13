@@ -333,12 +333,12 @@ async function createActionTool({
       description: description || '',
       schema: zodSchema,
     });
-    
+
     // Add returnDirect property to the tool if specified
     if (returnDirect === true) {
       actionTool.returnDirect = true;
     }
-    
+
     return actionTool;
   }
 
