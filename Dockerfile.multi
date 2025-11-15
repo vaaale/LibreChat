@@ -12,6 +12,8 @@ RUN apk --no-cache add curl
 RUN npm config set fetch-retry-maxtimeout 600000 && \
     npm config set fetch-retries 5 && \
     npm config set fetch-retry-mintimeout 15000
+COPY .env .
+COPY librechat.yaml .
 COPY package*.json ./
 COPY packages/data-provider/package*.json ./packages/data-provider/
 COPY packages/api/package*.json ./packages/api/

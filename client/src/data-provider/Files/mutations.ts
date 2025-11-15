@@ -154,7 +154,7 @@ export const useDeleteFilesMutation = (
     mutationFn: (body: t.DeleteFilesBody) => dataService.deleteFiles(body),
     ...options,
     onError: (error, vars, context) => {
-      if (error && typeof error === 'object' && 'response' in error) {
+      if (error != null && typeof error === 'object' && 'response' in error) {
         const errorWithResponse = error as { response?: { status?: number } };
         if (errorWithResponse.response?.status === 403) {
           showToast({

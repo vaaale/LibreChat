@@ -30,7 +30,7 @@ const cleanupPreset = ({ preset: _preset }: TCleanupPreset): TPreset => {
     // Only chatGptLabel exists: migrate to modelLabel
     preset.modelLabel = preset.chatGptLabel;
     delete preset.chatGptLabel;
-  } else if ('chatGptLabel' in preset) {
+  } else if (preset != null && 'chatGptLabel' in preset) {
     // chatGptLabel exists but is empty/falsy: remove it
     delete preset.chatGptLabel;
   }

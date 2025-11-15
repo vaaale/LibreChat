@@ -49,7 +49,7 @@ export default function MemoryCreateDialog({
     onError: (error: Error) => {
       let errorMessage = localize('com_ui_error');
 
-      if (error && typeof error === 'object' && 'response' in error) {
+      if (error != null && typeof error === 'object' && 'response' in error) {
         const axiosError = error as any;
         if (axiosError.response?.data?.error) {
           errorMessage = axiosError.response.data.error;
