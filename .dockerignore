@@ -9,9 +9,16 @@
 # Specific patterns to ignore
 data-node
 meili_data*
-librechat*
+#librechat*
 Dockerfile*
 docs
 
 # Ignore all hidden files
-.*
+#.*
+.gitignore
+.github
+.git
+.vscode
+.husky
+.devcontainer
+
