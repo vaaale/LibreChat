@@ -59,6 +59,7 @@ export const agentBaseSchema = z.object({
   avatar: agentAvatarSchema.nullable().optional(),
   model_parameters: z.record(z.unknown()).optional(),
   tools: z.array(z.string()).optional(),
+  tool_config: z.record(z.object({ returnDirect: z.boolean().optional() })).optional(),
   /** @deprecated Use edges instead */
   agent_ids: z.array(z.string()).optional(),
   edges: z.array(graphEdgeSchema).optional(),

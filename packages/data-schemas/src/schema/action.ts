@@ -33,6 +33,7 @@ const Action = new Schema<IAction>({
     default: 'action_prototype',
   },
   settings: Schema.Types.Mixed,
+  functions: [Schema.Types.Mixed],
   agent_id: String,
   assistant_id: String,
   metadata: {

@@ -5,6 +5,7 @@ export type Spec = {
   method: string;
   path: string;
   domain: string;
+  returnDirect?: boolean;
 };
 
 export const fakeData: Spec[] = [
@@ -28,6 +29,7 @@ export const fakeData: Spec[] = [
   },
 ];
 
+
 export const columns: ColumnDef<Spec>[] = [
   {
     header: 'Name',
@@ -41,14 +43,4 @@ export const columns: ColumnDef<Spec>[] = [
     header: 'Path',
     accessorKey: 'path',
   },
-  // {
-  //   header: '',
-  //   accessorKey: 'action',
-  //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  //   cell: ({ row: _row }) => (
-  //     <button className="btn relative btn-neutral h-8 rounded-lg border-token-border-light font-medium">
-  //       <div className="flex w-full gap-2 items-center justify-center">Test</div>
-  //     </button>
-  //   ),
-  // },
 ];

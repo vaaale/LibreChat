@@ -127,6 +127,7 @@ const initializeAgent = async ({
     agentId: agent.id,
     tools: agent.tools,
     model: agent.model,
+    tool_config: agent.tool_config,
     tool_resources,
   })) ?? {};
 

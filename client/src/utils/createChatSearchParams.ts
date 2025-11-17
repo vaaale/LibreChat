@@ -16,7 +16,7 @@ export default function createChatSearchParams(
 
   const params = new URLSearchParams();
 
-  if (input && typeof input === 'object' && !('endpoint' in input) && !('model' in input)) {
+  if (input != null && typeof input === 'object' && !('endpoint' in input) && !('model' in input)) {
     Object.entries(input as Record<string, string>).forEach(([key, value]) => {
       if (value != null && allowedParams.includes(key)) {
         params.set(key, value);

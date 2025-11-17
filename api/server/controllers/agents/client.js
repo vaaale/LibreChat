@@ -92,6 +92,10 @@ function logToolError(graph, error, toolId) {
   });
 }
 
+function onToolEnd(graph, error, toolId) {
+  logger.debug("HERE!!!!")
+}
+
 class AgentClient extends BaseClient {
   constructor(options = {}) {
     super(null, options);
@@ -856,7 +860,6 @@ class AgentClient extends BaseClient {
         // }
 
         memoryPromise = this.runMemory(messages);
-
         run = await createRun({
           agents,
           indexTokenCountMap,
@@ -881,6 +884,7 @@ class AgentClient extends BaseClient {
         await run.processStream({ messages }, config, {
           callbacks: {
             [Callback.TOOL_ERROR]: logToolError,
+            [Callback.TOOL_END]: onToolEnd,
           },
         });
 

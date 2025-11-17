@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { StepTypes, ContentTypes, ToolCallTypes } from './runs';
 import type { TAttachment, TPlugin } from 'src/schemas';
-import type { FunctionToolCall } from './assistants';
+import type { FunctionToolCall, FunctionTool } from './assistants';
 
 export namespace Agents {
   export type MessageType = 'human' | 'ai' | 'generic' | 'system' | 'function' | 'tool' | 'remove';
@@ -301,6 +301,7 @@ export type Action = {
   action_id: string;
   type?: string;
   settings?: Record<string, unknown>;
+  functions?: FunctionTool[];
   metadata: ActionMetadata;
   version: number | string;
 } & ({ assistant_id: string; agent_id?: never } | { assistant_id?: never; agent_id: string });

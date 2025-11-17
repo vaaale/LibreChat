@@ -33,6 +33,7 @@ export type AgentForm = {
   model: string | null;
   model_parameters: AgentModelParameters;
   tools?: string[];
+  tool_config?: Record<string, { returnDirect?: boolean }>;
   provider?: AgentProvider | OptionWithIcon;
   /** @deprecated Use edges instead */
   agent_ids?: string[];

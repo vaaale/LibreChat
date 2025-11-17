@@ -174,6 +174,7 @@ export default function AgentPanel() {
         recursion_limit,
         category,
         support_contact,
+        tool_config,
       } = data;
 
       const model = _model ?? '';
@@ -190,6 +191,7 @@ export default function AgentPanel() {
             instructions,
             model,
             tools,
+            tool_config,
             provider,
             model_parameters,
             agent_ids,
@@ -224,6 +226,7 @@ export default function AgentPanel() {
         instructions,
         model,
         tools,
+        tool_config,
         provider,
         model_parameters,
         agent_ids,

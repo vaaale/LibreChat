@@ -5,6 +5,7 @@ export interface IAction extends Document {
   action_id: string;
   type: string;
   settings?: unknown;
+  functions?: unknown[];
   agent_id?: string;
   assistant_id?: string;
   metadata: {

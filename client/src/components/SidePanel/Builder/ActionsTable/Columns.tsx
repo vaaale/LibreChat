@@ -5,6 +5,7 @@ export type Spec = {
   method: string;
   path: string;
   domain: string;
+  returnDirect?: boolean;
 };
 
 export const fakeData: Spec[] = [

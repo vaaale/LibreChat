@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import debounce from 'lodash/debounce';
 import { useFormContext } from 'react-hook-form';
-import { Spinner, useToastContext } from '@librechat/client';
+import { Label, Checkbox, Spinner, useToastContext } from '@librechat/client';
 import {
   validateAndParseOpenAPISpec,
   openapiToFunction,
+  extractDomainFromUrl,
   AuthTypeEnum,
 } from 'librechat-data-provider';
 import type {
@@ -81,8 +82,26 @@ export default function ActionsInput({
 
     setData(specs);
     setValidationResult(null);
-    setFunctions(functionSignatures.map((f) => f.toObjectTool()));
-  }, [validationResult]);
+
+    // Create new functions from spec
+    const newFunctions = functionSignatures.map((f) => f.toObjectTool());
+
+    // Merge with saved returnDirect values if action exists
+    if (action?.functions && action.functions.length > 0) {
+      const savedFunctionsMap = new Map(
+        action.functions.map((f) => [f.function?.name, f.returnDirect]),
+      );
+
+      newFunctions.forEach((func) => {
+        const savedReturnDirect = savedFunctionsMap.get(func.function?.name);
+        if (savedReturnDirect !== undefined) {
+          func.returnDirect = savedReturnDirect;
+        }
+      });
+    }
+
+    setFunctions(newFunctions);
+  }, [validationResult, action?.functions]);
 
   const updateAgentAction = useUpdateAgentAction({
     onSuccess(data) {
@@ -120,8 +139,8 @@ export default function ActionsInput({
     let { metadata = {} } = action ?? {};
     const action_id = action?.action_id;
     metadata.raw_spec = inputValue;
-    const parsedUrl = new URL(data[0].domain);
-    const domain = parsedUrl.hostname;
+    // Extract domain with protocol to match server-side validation
+    const domain = extractDomainFromUrl(data[0].domain);
     if (!domain) {
       // alert user?
       return;
@@ -255,6 +274,36 @@ export default function ActionsInput({
             </label>
           </div>
           <ActionsTable columns={columns} data={data} />
+        </div>
+      )}
+      {!!functions && functions.length > 0 && (
+        <div className="my-3">
+          <label className="text-token-text-primary mb-2 block text-sm font-medium">
+            {localize('com_ui_tool_return_direct')} Configuration
+          </label>
+          <div className="space-y-2">
+            {functions.map((func, index) => (
+              <div key={func.function?.name || index} className="flex items-center gap-2">
+                <Checkbox
+                  id={`func-${func.function?.name}-return-direct`}
+                  checked={func.returnDirect === true}
+                  onCheckedChange={(checked) => {
+                    const updated = [...functions];
+                    updated[index] = { ...func, returnDirect: checked === true };
+                    setFunctions(updated);
+                  }}
+                  className="h-4 w-4 rounded border border-border-medium"
+                  aria-label={`Return Direct for ${func.function?.name}`}
+                />
+                <Label
+                  htmlFor={`func-${func.function?.name}-return-direct`}
+                  className="cursor-pointer text-sm text-text-secondary"
+                >
+                  {func.function?.name}
+                </Label>
+              </div>
+            ))}
+          </div>
         </div>
       )}
       <div className="relative my-1">

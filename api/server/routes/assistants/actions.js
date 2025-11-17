@@ -112,7 +112,7 @@ router.post('/:assistant_id', async (req, res) => {
     promises.push(updateAssistantDoc({ assistant_id }, assistantUpdateData));
 
     // Only update user field for new actions
-    const actionUpdateData = { metadata, assistant_id };
+    const actionUpdateData = { metadata, assistant_id, functions };
     if (!actions_result || !actions_result.length) {
       // For new actions, use the assistant owner's user ID
       actionUpdateData.user = assistant_user || req.user.id;

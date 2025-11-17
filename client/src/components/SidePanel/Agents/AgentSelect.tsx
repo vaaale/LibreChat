@@ -77,6 +77,7 @@ export default function AgentSelect({
         agent: update,
         model: update.model,
         tools: agentTools,
+        tool_config: fullAgent.tool_config,
         // Ensure the category is properly set for the form
         category: fullAgent.category || 'general',
         // Make sure support_contact is properly loaded

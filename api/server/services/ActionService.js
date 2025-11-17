@@ -132,6 +132,7 @@ async function loadActionSets(searchParams) {
  * @param {string | undefined} [params.name] - The name of the tool.
  * @param {string | undefined} [params.description] - The description for the tool.
  * @param {import('zod').ZodTypeAny | undefined} [params.zodSchema] - The Zod schema for tool input validation/definition
+ * @param {boolean | undefined} [params.returnDirect] - Whether to return the tool output directly without calling the model
  * @param {{ oauth_client_id?: string; oauth_client_secret?: string; }} params.encrypted - The encrypted values for the action.
  * @returns { Promise<typeof tool | { _call: (toolInput: Object | string) => unknown}> } An object with `_call` method to execute the tool input.
  */
@@ -143,6 +144,7 @@ async function createActionTool({
   zodSchema,
   name,
   description,
+  returnDirect,
   encrypted,
 }) {
   /** @type {(toolInput: Object | string, config: GraphRunnableConfig) => Promise<unknown>} */
@@ -326,11 +328,18 @@ async function createActionTool({
   };
 
   if (name) {
-    return tool(_call, {
+    const actionTool = tool(_call, {
       name: name.replace(replaceSeparatorRegex, '_'),
       description: description || '',
       schema: zodSchema,
     });
+
+    // Add returnDirect property to the tool if specified
+    if (returnDirect === true) {
+      actionTool.returnDirect = true;
+    }
+
+    return actionTool;
   }
 
   return {
