@@ -158,6 +158,7 @@
   },
   "dependencies": {
     "compression": "^1.8.1",
+    "mongodb": "^7.0.0",
     "multer": "^2.0.2",
     "node-saml": "^3.1.2",
     "openid-client": "^6.8.1",
