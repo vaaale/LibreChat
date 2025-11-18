@@ -691,6 +691,9 @@ class BaseClient {
 
     /** @type {string|string[]|undefined} */
     const completion = await this.sendCompletion(payload, opts);
+    logger.debug('CONTENT OF COMPLETION', completion);
+    console.log('COMPLETION');
+    console.dir(completion);
     if (completion.at(-1).type === 'tool_call') {
       completion.push(JSON.parse(completion.at(-1).tool_call.output).at(-1));
     }
