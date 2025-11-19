@@ -92,9 +92,9 @@ function logToolError(graph, error, toolId) {
   });
 }
 
-function onToolEnd(graph, error, toolId) {
-  logger.debug("HERE!!!!")
-}
+// function onToolEnd(graph, error, toolId) {
+//   logger.debug("HERE!!!!")
+// }
 
 class AgentClient extends BaseClient {
   constructor(options = {}) {
@@ -884,7 +884,7 @@ class AgentClient extends BaseClient {
         await run.processStream({ messages }, config, {
           callbacks: {
             [Callback.TOOL_ERROR]: logToolError,
-            [Callback.TOOL_END]: onToolEnd,
+            // [Callback.TOOL_END]: onToolEnd,
           },
         });
 
