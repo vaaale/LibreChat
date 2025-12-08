@@ -21,4 +21,9 @@ docs
 .vscode
 .husky
 .devcontainer
+.env
+.env*
+librechat.yaml
+librechat.yaml*
+
 
