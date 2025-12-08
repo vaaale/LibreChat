@@ -9,6 +9,7 @@ const artifactFilename = {
   'application/vnd.react': 'App.tsx',
   'text/html': 'index.html',
   'application/vnd.code-html': 'index.html',
+  'application/vnd.external-app': 'index.html',
   // mermaid and markdown types are handled separately in useArtifactProps.ts
   default: 'index.html',
   // 'css': 'css',
@@ -30,6 +31,7 @@ const artifactTemplate: Record<
   'application/vnd.react': 'react-ts',
   'application/vnd.mermaid': 'react-ts',
   'application/vnd.code-html': 'static',
+  'application/vnd.external-app': undefined, // External apps don't use Sandpack
   'text/markdown': 'react-ts',
   'text/md': 'react-ts',
   'text/plain': 'react-ts',
@@ -142,6 +144,91 @@ export function getProps(type: string): Partial<SandpackProviderProps> {
 export const sharedOptions: SandpackProviderProps['options'] = {
   externalResources: ['https://cdn.tailwindcss.com/3.4.17'],
 };
+
+export const EXTERNAL_APP_TYPE = 'application/vnd.external-app';
+
+/**
+ * Extracts URLs from HTML content (meta refresh, script redirects, iframe src, etc.)
+ */
+export function extractUrlsFromHtml(html: string): string[] {
+  const urls: string[] = [];
+
+  // Match meta refresh URLs
+  const metaRefreshMatch = html.match(/content=["'][^"']*url=([^"'\s>]+)/i);
+  if (metaRefreshMatch?.[1]) {
+    urls.push(metaRefreshMatch[1]);
+  }
+
+  // Match window.location or window.top.location assignments
+  const locationMatch = html.match(/(?:window\.(?:top\.)?location(?:\.href)?)\s*=\s*["']([^"']+)["']/i);
+  if (locationMatch?.[1]) {
+    urls.push(locationMatch[1]);
+  }
+
+  // Match iframe src
+  const iframeSrcMatch = html.match(/<iframe[^>]+src=["']([^"']+)["']/i);
+  if (iframeSrcMatch?.[1]) {
+    urls.push(iframeSrcMatch[1]);
+  }
+
+  // Match anchor href with target="_top" or target="_parent"
+  const anchorMatch = html.match(/<a[^>]+href=["']([^"']+)["'][^>]+target=["'](?:_top|_parent)["']/i);
+  if (anchorMatch?.[1]) {
+    urls.push(anchorMatch[1]);
+  }
+
+  return urls;
+}
+
+/**
+ * Validates if an external app artifact is allowed based on server config
+ */
+export function isExternalAppAllowed(
+  artifactType: string | undefined,
+  artifactSource: { type: 'llm' | 'mcp'; mcpServer?: string } | undefined,
+  artifactContent: string | undefined,
+  mcpServers: Record<string, { externalApps?: { enabled: boolean; allowedOrigins: string[] } }> | undefined,
+): { allowed: boolean; validatedUrl?: string; reason?: string } {
+  // Must be external-app type
+  if (artifactType !== EXTERNAL_APP_TYPE) {
+    return { allowed: false, reason: 'Not an external app artifact' };
+  }
+
+  // Must come from an MCP server
+  if (artifactSource?.type !== 'mcp' || !artifactSource.mcpServer) {
+    return { allowed: false, reason: 'External apps must come from a trusted MCP server' };
+  }
+
+  const serverName = artifactSource.mcpServer;
+  const serverConfig = mcpServers?.[serverName];
+
+  // Server must have externalApps enabled
+  if (!serverConfig?.externalApps?.enabled) {
+    return { allowed: false, reason: `MCP server "${serverName}" does not have external apps enabled` };
+  }
+
+  const allowedOrigins = serverConfig.externalApps.allowedOrigins || [];
+  if (allowedOrigins.length === 0) {
+    return { allowed: false, reason: `MCP server "${serverName}" has no allowed origins configured` };
+  }
+
+  // Extract URLs from the artifact content
+  const urls = extractUrlsFromHtml(artifactContent || '');
+  if (urls.length === 0) {
+    return { allowed: false, reason: 'No URLs found in artifact content' };
+  }
+
+  // Check if any extracted URL matches an allowed origin
+  for (const url of urls) {
+    for (const allowedOrigin of allowedOrigins) {
+      if (url.startsWith(allowedOrigin)) {
+        return { allowed: true, validatedUrl: url };
+      }
+    }
+  }
+
+  return { allowed: false, reason: `URLs in artifact do not match allowed origins for "${serverName}"` };
+}
 
 export const sharedFiles = {
   '/lib/utils.ts': shadcnComponents.utils,

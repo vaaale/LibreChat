@@ -4,6 +4,11 @@ export interface CodeBlock {
   content: string;
 }
 
+export interface ArtifactSource {
+  type: 'llm' | 'mcp';
+  mcpServer?: string;
+}
+
 export interface Artifact {
   id: string;
   lastUpdateTime: number;
@@ -14,6 +19,8 @@ export interface Artifact {
   content?: string;
   title?: string;
   type?: string;
+  /** Source of the artifact - tracks whether it came from LLM or MCP server */
+  source?: ArtifactSource;
 }
 
 export type ArtifactFiles =

@@ -147,6 +147,7 @@ router.get('/', async function (req, res) {
             chatMenu: serverConfig?.chatMenu,
             isOAuth: serverConfig.requiresOAuth,
             customUserVars: serverConfig?.customUserVars,
+            externalApps: serverConfig?.externalApps,
           });
         }
       } catch (error) {

@@ -73,6 +73,19 @@ const BaseOptionsSchema = z.object({
       }),
     )
     .optional(),
+  /**
+   * External apps configuration for this MCP server.
+   * Allows artifacts from this server to render in an iframe with navigation capabilities.
+   * Only URLs matching allowedOrigins will be permitted.
+   */
+  externalApps: z
+    .object({
+      /** Whether external apps are enabled for this server */
+      enabled: z.boolean().default(false),
+      /** List of allowed origin URLs that artifacts can navigate to */
+      allowedOrigins: z.array(z.string().url()).default([]),
+    })
+    .optional(),
 });
 
 export const StdioOptionsSchema = BaseOptionsSchema.extend({

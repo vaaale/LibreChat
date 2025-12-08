@@ -45,6 +45,7 @@ export function Artifact({
 }: Artifact & {
   children: React.ReactNode | { props: { children: React.ReactNode } };
   node: unknown;
+  mcpServer?: string;
 }) {
   const location = useLocation();
   const { messageId } = useMessageContext();
@@ -86,6 +87,9 @@ export function Artifact({
         messageId,
         index: artifactIndex,
         lastUpdateTime: now,
+        source: props.mcpServer
+          ? { type: 'mcp', mcpServer: props.mcpServer }
+          : { type: 'llm' },
       };
 
       if (!isArtifactRoute(location.pathname)) {

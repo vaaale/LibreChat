@@ -10,6 +10,7 @@ import { useAutoScroll } from '~/hooks/Artifacts/useAutoScroll';
 import { ArtifactCodeEditor } from './ArtifactCodeEditor';
 import { useGetStartupConfig } from '~/data-provider';
 import { ArtifactPreview } from './ArtifactPreview';
+import { ExternalAppPreview, isExternalAppArtifact } from './ExternalAppPreview';
 
 export default function ArtifactTabs({
   artifact,
@@ -61,15 +62,19 @@ export default function ArtifactTabs({
       </Tabs.Content>
 
       <Tabs.Content value="preview" className="h-full w-full flex-grow overflow-auto" tabIndex={-1}>
-        <ArtifactPreview
-          files={files}
-          fileKey={fileKey}
-          template={template}
-          previewRef={previewRef}
-          sharedProps={sharedProps}
-          currentCode={currentCode}
-          startupConfig={startupConfig}
-        />
+        {isExternalAppArtifact(artifact) ? (
+          <ExternalAppPreview artifact={artifact} />
+        ) : (
+          <ArtifactPreview
+            files={files}
+            fileKey={fileKey}
+            template={template}
+            previewRef={previewRef}
+            sharedProps={sharedProps}
+            currentCode={currentCode}
+            startupConfig={startupConfig}
+          />
+        )}
       </Tabs.Content>
     </div>
   );
