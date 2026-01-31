@@ -44,8 +44,8 @@
     "@azure/storage-blob": "^12.27.0",
     "@google/genai": "^1.19.0",
     "@keyv/redis": "^4.3.3",
-    "@langchain/core": "^0.3.80",
-    "@librechat/agents": "^3.0.776",
+    "@langchain/core": "^1.1.8",
+    "@librechat/agents": "file:../agents/",
     "@librechat/api": "*",
     "@librechat/data-schemas": "*",
     "@microsoft/microsoft-graph-client": "^3.0.7",
@@ -111,7 +111,7 @@
     "undici": "^7.18.2",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^5.0.0",
-    "zod": "^3.22.4"
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "jest": "^30.2.0",

@@ -86,8 +86,8 @@
     "@azure/storage-blob": "^12.27.0",
     "@google/genai": "^1.19.0",
     "@keyv/redis": "^4.3.3",
-    "@langchain/core": "^0.3.80",
-    "@librechat/agents": "^3.0.776",
+    "@langchain/core": "^1.1.8",
+    "@librechat/agents": "file:../../agents/",
     "@librechat/data-schemas": "*",
     "@modelcontextprotocol/sdk": "^1.25.3",
     "@smithy/node-http-handler": "^4.4.5",
@@ -113,6 +113,6 @@
     "rate-limit-redis": "^4.2.0",
     "tiktoken": "^1.0.15",
     "undici": "^7.18.2",
-    "zod": "^3.22.4"
+    "zod": "^4.2.1"
   }
 }
